@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="lv">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Asistents Matemātikā</title>
+    <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+    <h2>👩‍🏫 Sveiks! Es esmu tavs matemātikas asistents!</h2>
+    <img src="static/skol.gif" alt="AI Sejiņa" />
+
+    <div class="chatbox">
+        <!-- 1. solis – jautājuma forma -->
+        <form id="chat-form">
+            <p><strong>Tu:</strong>
+                <input type="text" id="question" required />
+            </p>
+            <p>
+                <input type="submit" value="Jautā!" />
+                <button type="button" id="clear-btn">Notīrīt</button>
+                <button type="button" onclick="runTTS()">🔊 Nolasīt skaļi</button>
+            </p>
+        </form>
+
+        <!-- 2. solis – skolēna atbilde -->
+        <div id="answer-box" style="display:none; margin-top:15px;">
+            <p><strong>Tava atbilde:</strong>
+                <input type="text" id="user-answer" />
+            </p>
+            <p>
+                <button type="button" id="check-btn">Pārbaudīt</button>
+            </p>
+        </div>
+
+        <div id="response-box"></div>
+        <audio id="audio" controls style="display:none;"></audio>
+    </div>
+
+<script>
+const form = document.getElementById('chat-form');
+const questionInput = document.getElementById('question');
+const responseBox = document.getElementById('response-box');
+const clearBtn = document.getElementById('clear-btn');
+const answerBox = document.getElementById('answer-box');
+const userAnswerInput = document.getElementById('user-answer');
+const checkBtn = document.getElementById('check-btn');
+const audio = document.getElementById('audio');
+
+let sessionID = null;
+
+clearBtn.addEventListener('click', () => {
+    questionInput.value = '';
+    userAnswerInput.value = '';
+    responseBox.innerHTML = '';
+    answerBox.style.display = 'none';
+    audio.pause();
+    audio.src = '';
+    audio.style.display = 'none';
+});
+
+// 1. solis – nosūtām jautājumu, lai iegūtu sesijas ID
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const question = questionInput.value.trim();
+    if (!question) return;
+
+    responseBox.innerHTML += `<p><strong>Tu:</strong> ${question}</p>`;
+    questionInput.value = '';
+    responseBox.scrollTop = responseBox.scrollHeight;
+
+    try {
+        const res = await fetch('/get_correct_answer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question })
+        });
+        const data = await res.json();
+
+        if (data.error) {
+            responseBox.innerHTML += `<p style="color:red;">${data.error}</p>`;
+            return;
+        }
+
+        sessionID = data.session_id;
+        answerBox.style.display = 'block';
+        responseBox.innerHTML += `<p><em>Ievadi savu atbildi un spied "Pārbaudīt".</em></p>`;
+        responseBox.scrollTop = responseBox.scrollHeight;
+    } catch (err) {
+        responseBox.innerHTML += `<p style="color:red;">Kļūda savienojumā ar serveri.</p>`;
+    }
+});
+
+// 2. solis – pārbaudām skolēna atbildi
+checkBtn.addEventListener('click', async () => {
+    const userAnswer = userAnswerInput.value.trim();
+    if (!sessionID || !userAnswer) return;
+
+    try {
+        const res = await fetch('/check_answer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ session_id: sessionID, user_answer: userAnswer })
+        });
+        const data = await res.json();
+
+        if (data.error) {
+            responseBox.innerHTML += `<p style="color:red;">${data.error}</p>`;
+        } else {
+            const color = data.result.includes("Pareizi") ? "green" : "red";
+            responseBox.innerHTML += `<p style="color:${color};"><strong>${data.result}</strong> Pareizā atbilde: ${data.correct_answer}</p>`;
+            answerBox.style.display = 'none';
+            userAnswerInput.value = '';
+        }
+        responseBox.scrollTop = responseBox.scrollHeight;
+    } catch (err) {
+        responseBox.innerHTML += `<p style="color:red;">Kļūda pārbaudē.</p>`;
+    }
+});
+
+// Balss sintezators
+async function runTTS() {
+    const text = document.getElementById("response-box").innerText;
+    if (!text || text.length < 2) {
+        alert("Nav ko nolasīt.");
+        return;
+    }
+    try {
+        const res = await fetch("/sinteze", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text })
+        });
+        const data = await res.json();
+        if (data.audio_url) {
+            audio.src = data.audio_url;
+            audio.style.display = "block";
+            await audio.play();
+        } else {
+            alert("Neizdevās saņemt balsi.");
+        }
+    } catch (e) {
+        alert("Kļūda: " + e.message);
+    }
+}
+</script>
+</body>
+</html>

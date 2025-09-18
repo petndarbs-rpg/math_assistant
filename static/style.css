@@ -1,0 +1,41 @@
+
+body {
+    font-family: Arial;
+    text-align: center;
+    background-color: #f0f8ff;
+}
+img {
+    width: 150px;
+    margin-top: 20px;
+}
+.chatbox {
+    width: 320px;
+    margin: 20px auto;
+    text-align: left;
+    padding: 20px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px #ccc;
+}
+input[type=text] {
+    width: 70%;
+    padding: 10px;
+}
+input[type=submit], button {
+    padding: 10px 15px;
+    margin-top: 5px;
+}
+#response-box {
+    margin-top: 20px;
+    font-weight: bold;
+}
+#clear-btn{
+    padding: 10px 15px;
+    width: 70px;
+    height: 40px;
+}
+#answer-box {
+    margin-top: 20px;
+    padding-top: 10px;
+    border-top: 1px dashed #ccc;
+}
