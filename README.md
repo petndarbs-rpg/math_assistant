@@ -1,6 +1,6 @@
 # AI Asistents Matemātikā
 
-Šis ir vienkāršs mākslīgā intelekta asistenta piemērs 1. klases skolēniem, kas palīdz apgūt matemātikas pamatus, izmantojot Python (Flask), SQLite, HTML, CSS un JavaScript.
+Šis ir vienkāršs mākslīgā intelekta asistenta piemērs skolēniem, kas palīdz apgūt matemātikas pamatus, izmantojot Python (Flask), SQLite, HTML, CSS un JavaScript.
 
  Funkcionalitāte
 - Lietotājs var uzdot jautājumus par matemātiku (piemēram, "Cik ir 2+2").
